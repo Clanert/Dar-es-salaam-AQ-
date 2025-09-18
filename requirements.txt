@@ -1,0 +1,9 @@
+streamlit>=1.32.0
+pandas>=2.2.0
+numpy>=1.26.0
+plotly>=5.20.0
+folium>=0.15.0
+branca>=0.7.0
+pytz>=2024.1
+streamlit-option-menu>=0.3.12
+reportlab>=4.0.9
