@@ -36,6 +36,16 @@ from reportlab.lib import colors
 from reportlab.lib.units import inch
 from urllib.request import urlopen
 
+from streamlit_option_menu import option_menu
+
+st.set_page_config(
+    page_title="Dar es Salaam Air Quality",
+    layout="wide",
+    page_icon="🌍",
+    initial_sidebar_state="expanded",  # start open
+)
+
+
 def _aqi_color(aqi: float) -> str:
     # Return hex color for current AQI value based on AQI_LABELS
     for lo, hi, _, color in AQI_LABELS:
@@ -370,29 +380,37 @@ def load_data() -> pd.DataFrame:
 # ------------------------------
 
 def inject_css():
-    st.markdown(
-        """
-        <style>
-        /* Make the app feel like a full website */
-        .block-container{padding-top:1rem;padding-bottom:2rem;}
-        header {visibility: hidden;} /* hide default Streamlit header */
-        footer {visibility: hidden;}
-        .kpi-card {border-radius:16px;padding:14px 16px;background:#1112170d;border:1px solid #eaeaea;}
-        .brand {display:flex; align-items:center; gap:12px;}
-        .brand h1{margin:0;font-size:1.25rem}
-        .brand small{opacity:.75}
-        /* Legend card for folium */
-        .aqi-legend {
-            position: absolute; z-index: 9999; bottom: 20px; right: 20px;
-            background: white; padding: 10px 12px; border-radius: 10px; border: 1px solid #ddd;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); font-size: 13px;
-        }
-        .aqi-legend div { display:flex; align-items:center; gap:8px; margin:4px 0; }
-        .aqi-legend span { display:inline-block; width:16px; height:10px; border-radius:2px; border:1px solid #6662;}
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+    st.markdown("""
+    <style>
+      /* ✅ Keep Streamlit header visible (toggle lives here) */
+      header { visibility: visible !important; }
+      [data-testid="stHeader"] { background: transparent; }
+
+      /* Hide the toolbar only (old “hamburger” menu), not the header */
+      [data-testid="stToolbar"] { display: none !important; }
+
+      /* ✅ Make sure the collapse/expand control shows & sits on top */
+      [data-testid="collapsedControl"] {
+        display: flex !important;
+        visibility: visible !important;
+        z-index: 1000 !important;
+      }
+
+      .block-container{padding-top:1rem;padding-bottom:2rem;}
+      footer {visibility: hidden;}
+
+      .kpi-card {border-radius:16px;padding:14px 16px;background:#1112170d;border:1px solid #eaeaea;}
+      .brand {display:flex; align-items:center; gap:12px;}
+      .brand h1{margin:0;font-size:1.25rem}
+      .brand small{opacity:.75}
+      .aqi-legend { position:absolute; z-index:9999; bottom:20px; right:20px;
+                    background:white; padding:10px 12px; border-radius:10px; border:1px solid #ddd;
+                    box-shadow:0 2px 10px rgba(0,0,0,0.1); font-size:13px; }
+      .aqi-legend div { display:flex; align-items:center; gap:8px; margin:4px 0; }
+      .aqi-legend span { display:inline-block; width:16px; height:10px; border-radius:2px; border:1px solid #6662; }
+    </style>
+    """, unsafe_allow_html=True)
+
 
 
 def top_brand_bar():
@@ -559,25 +577,23 @@ def pollution_alert_box(df_window: pd.DataFrame, threshold: int = 151):
 # ------------------------------
 # App Layout
 # ------------------------------
-from streamlit_option_menu import option_menu
 
-st.set_page_config(page_title="Dar es Salaam Air Quality", layout="wide", page_icon="🌍")
-inject_css()
-top_brand_bar()
+
+
 
 with st.sidebar:
-    # Navigation FIRST...
-    choice = option_menu(
-        menu_title="Navigation",
-        options=["Overview", "Stations", "Trends", "Data","Reports", "About"],
-        icons=["globe", "pin-map", "graph-up", "table", "info-circle"],  # bootstrap icons
-        default_index=0,
-        orientation="vertical",
-    )
-    # ...then the logo (moved below navigation)
+    with st.expander("Navigation", expanded=True):
+        choice = option_menu(
+            "",
+            ["Overview", "Stations", "Trends", "Data", "Reports", "About"],
+            icons=["globe", "pin-map", "graph-up", "table", "file-earmark-text", "info-circle"],
+            default_index=0,
+            orientation="vertical",
+        )
     st.image("https://i.ibb.co/gLc9tqzN/download.jpg", caption="Dar es Salaam City Council", use_container_width=True)
     st.markdown("---")
     st.markdown("**WHO 24-hour Guidelines**\n\n• PM₂.₅: **15 µg/m³**\n\n• PM₁₀: **45 µg/m³**")
+
 
 # Load data
 with st.spinner("Loading data…"):
